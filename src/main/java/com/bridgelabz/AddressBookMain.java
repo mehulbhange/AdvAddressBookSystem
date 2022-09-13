@@ -1,9 +1,11 @@
 package com.bridgelabz;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class AddressBookMain {
@@ -12,7 +14,7 @@ public class AddressBookMain {
         System.out.println("Welcome to Address Book Program");
         Scanner sc = new Scanner(System.in);
         //AddressBook addressBook = new AddressBook();
-        String filePath = "E:\\BridgeLabz Fellowship\\IntelliJ\\AddressBookMain\\src\\";
+        String filePath = "E:\\BridgeLabz Fellowship\\IntelliJ\\AddressBookSystem\\src\\";
 
         HashMap<String, AddressBook> addressBookHashMap = new HashMap<>();
 
@@ -21,7 +23,9 @@ public class AddressBookMain {
                     "\n6.Display available address books \n7.Display all address books" +
                     "\n8.Write addressbook to file" +
                     "\n9.Read addressbook from file" +
-                    "\n10.Search by city or state ");
+                    "\n10.Search by city or state" +
+                    "\n11.Write Address book contacts in CSV file" +
+                    "\n12.Read Address book contacts from CSV file");
             int ch = sc.nextInt();
             switch (ch){
                 case 0:
@@ -139,6 +143,67 @@ public class AddressBookMain {
                         System.out.println(entry.getKey());
                         AddressBook addBook = (AddressBook) entry.getValue();
                         addBook.searchByCityOrState(location);
+                    }
+                    break;
+                case 11:
+                    Set<Map.Entry<String, AddressBook>> addressBook3 = addressBookHashMap.entrySet();
+                    if (addressBook3.isEmpty()){
+                        System.out.println("Address book not available!");
+                    }
+                    for (Map.Entry entry :  addressBook3){
+                        String fileName = entry.getKey().toString();
+                        try {
+                            // create FileWriter object with file as parameter
+                            FileWriter outputfile = new FileWriter(filePath+fileName+"CSV.csv");
+                            // create CSVWriter object filewriter object as parameter
+                            CSVWriter writer = new CSVWriter(outputfile);
+
+                            String[] header = { "First Name", "Last Name", "Street", "City", "State", "zipcode", "ContactNo", "Email" };
+                            writer.writeNext(header);
+                            AddressBook addressBook4 = (AddressBook) entry.getValue();
+                            List<Contact> contacts = addressBook4.getContactList();
+
+                            for (Contact cnt : contacts){
+                                String[] data = {cnt.getFirstName(), cnt.getLastName(), cnt.getStreet(), cnt.getCity(),cnt.getState(),String.valueOf(cnt.getZip()),String.valueOf(cnt.getPhoneNo()),cnt.getEmail()};
+                                writer.writeNext(data);
+                            }
+
+                            writer.close();
+
+                        }catch (Exception exception){
+                            System.out.println(exception);
+                        }
+                    }
+                    break;
+                case 12:
+                    System.out.println("Enter address book name :");
+                    String addBookName = sc.next();
+                    File file1 = new File(filePath+addBookName+"CSV.csv");
+                    String fileName = filePath+addBookName+"CSV.csv";
+                    if (!file1.exists()){
+                        System.out.println(addBookName +" not found!");
+                    }else{
+                        try {
+                            Reader reader = Files.newBufferedReader(Paths.get(fileName));
+                            CSVReader csvReader = new CSVReader(reader);
+
+                            String[] nextRecord;
+                            csvReader.readNext();
+                            while ((nextRecord = csvReader.readNext()) != null){
+                                System.out.print("First name:"+ nextRecord[0] + "\t");
+                                System.out.print("Last name:"+ nextRecord[1] + "\t");
+                                System.out.print("Street:"+ nextRecord[2] + "\t");
+                                System.out.print("City:"+ nextRecord[3] + "\t");
+                                System.out.print("State:"+ nextRecord[4] + "\t");
+                                System.out.print("Zip code:"+ nextRecord[5] + "\t");
+                                System.out.print("Phone:"+ nextRecord[6] + "\t");
+                                System.out.print("Email:"+ nextRecord[7] + "\t");
+                                System.out.println();
+                            }
+
+                        }catch (Exception ex){
+                            System.out.println(ex);
+                        }
                     }
                     break;
                 default:
